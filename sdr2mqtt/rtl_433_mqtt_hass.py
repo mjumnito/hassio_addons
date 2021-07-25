@@ -246,8 +246,8 @@ mappings = {
         "object_suffix": "RT",
         "config": {
             "name": "Rain Total",
-            "unit_of_measurement": "mm",
-            "value_template": "{{ float(value|float) * 25.4 | round(2) }}"
+            "unit_of_measurement": "in",
+            "value_template": "{{ value|float }}"
         }
     },
 
@@ -256,8 +256,8 @@ mappings = {
         "object_suffix": "RR",
         "config": {
             "name": "Rain Rate",
-            "unit_of_measurement": "mm/h",
-            "value_template": "{{ float(value|float) * 25.4 | round(2) }}"
+            "unit_of_measurement": "in/h",
+            "value_template": "{{ value|float }}"
         }
     },
 
