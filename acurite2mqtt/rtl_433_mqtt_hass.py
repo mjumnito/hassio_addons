@@ -25,6 +25,8 @@ MQTT_USERNAME = os.environ['MQTT_USERNAME']
 MQTT_PASSWORD = os.environ['MQTT_PASSWORD']
 MQTT_TOPIC = os.environ['MQTT_TOPIC']
 DISCOVERY_PREFIX = os.environ['DISCOVERY_PREFIX']
+WHITELIST_ENABLE = os.environ['WHITELIST_ENABLE']
+WHITELIST = os.environ['WHITELIST']
 DISCOVERY_INTERVAL = os.environ['DISCOVERY_INTERVAL']
 DEBUG = os.environ['DEBUG']
 
@@ -33,6 +35,8 @@ MQTT_PORT = int(MQTT_PORT)
 DISCOVERY_INTERVAL = int(DISCOVERY_INTERVAL)
 
 discovery_timeouts = {}
+
+whitelist_list = WHITELIST.split()
 
 mappings = {
     "temperature_C": {
@@ -356,6 +360,17 @@ mappings = {
         }
     },
 
+    "light_klx": {
+        "device_type": "sensor",
+        "object_suffix": "light_klx",
+        "config": {
+            "device_class": "illuminance",
+            "name": "Outside Luminancee",
+            "unit_of_measurement": "lux",
+            "value_template": "{{ value|int }}"
+        }
+    },
+
     "brightness": {
         "device_type": "sensor",
         "object_suffix": "lux",
@@ -429,7 +444,7 @@ def mqtt_message(client, userdata, msg):
         # Decode JSON payload
         data = json.loads(msg.payload.decode())
         if DEBUG == 'true':
-            print("Publishing to {} : {}".format(msg.topic, json.dumps(data)))
+            print("Received message: {} : {}".format(msg.topic, json.dumps(data)))
         bridge_event_to_hass(client, msg.topic, data)
 
     except json.decoder.JSONDecodeError:
@@ -498,6 +513,12 @@ def bridge_event_to_hass(mqttc, topic, data):
         instance = str(data["id"])
     if not instance:
         # no unique device identifier
+        return
+    
+    if (WHITELIST_ENABLE == 'true') and (instance not in whitelist_list):
+        # not an authorized device
+        if DEBUG == 'true':
+            print("Device Id:{} not in whitelist".format(instance))
         return
 
     if "channel" in data:
